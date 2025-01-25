@@ -61,7 +61,7 @@ public class MainFrame {
 
         assignSeatsArray();  //Pętla do zrobienia tablicy przycisków do wyboru miejsc
 
-        JButton headBackButton = createHeadBackButton(reservationPanel, true);
+        JButton headBackButton = createHeadBackButton(reservationPanel, mainPanel, true);
         reservationPanel.add(headBackButton);
 
         JButton nextButton = createNextButton();
@@ -71,13 +71,14 @@ public class MainFrame {
         nextReservationPanel = createBasicPanel(false);
         frame.add(nextReservationPanel);
 
-
+        JButton headBackButton = createHeadBackButton(nextReservationPanel, reservationPanel, false);
+        nextReservationPanel.add(headBackButton);
     }
     public void showReservationsPanel() {
         showReservationsPanel = createBasicPanel(false);
         frame.add(showReservationsPanel);
 
-        JButton headBackButton = createHeadBackButton(showReservationsPanel, false);
+        JButton headBackButton = createHeadBackButton(showReservationsPanel, mainPanel, false);
         showReservationsPanel.add(headBackButton);
     }
 
