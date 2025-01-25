@@ -99,7 +99,7 @@ public class MainFrame {
         });
         return button;
     }
-    private JButton createHeadBackButton(JPanel panel, boolean isClearingSeatsNecessary) {
+    private JButton createHeadBackButton(JPanel panelOpenedAtTheMoment, JPanel panelToHeadBack, boolean isClearingSeatsNecessary) {
         JButton headBackButton = new JButton("Wróć");
         headBackButton.setBounds((frame.getWidth() - headBackButton.getWidth())/2 - 250, 500, 200, 50);
         headBackButton.setFont(new Font("Arial", Font.BOLD, 20));
@@ -108,8 +108,8 @@ public class MainFrame {
         headBackButton.setBackground(Color.BLACK);
         headBackButton.setForeground(Color.LIGHT_GRAY);
         headBackButton.addActionListener(e -> {
-            mainPanel.setVisible(true);
-            panel.setVisible(false);
+            panelToHeadBack.setVisible(true);
+            panelOpenedAtTheMoment.setVisible(false);
             if(isClearingSeatsNecessary) {
                 clearSeats();
             }
