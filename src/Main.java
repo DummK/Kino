@@ -7,6 +7,7 @@ public class Main {
             mainFrame.frame();
             mainFrame.reservationPanel();
             mainFrame.showReservationsPanel();
+            mainFrame.nextReservationPanel();
             mainFrame.mainPanel();
         });
     }

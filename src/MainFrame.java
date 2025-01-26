@@ -1,5 +1,6 @@
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Objects;
 import javax.swing.*;
 
@@ -13,6 +14,7 @@ public class MainFrame {
     private final JButton[][] seats = new JButton[10][5];
     private JComboBox<Movie> moviesComboBox;
     private JComboBox<String> timeComboBox;
+    private final LinkedList<SavedSeats> savedSeats = new LinkedList<>();
 
     public void frame() {
         frame = new JFrame("Kino Cwelowy");
@@ -61,7 +63,7 @@ public class MainFrame {
 
         assignSeatsArray();  //Pętla do zrobienia tablicy przycisków do wyboru miejsc
 
-        JButton headBackButton = createHeadBackButton(reservationPanel, mainPanel, true);
+        JButton headBackButton = createHeadBackButtonToMainPanel(reservationPanel, true);
         reservationPanel.add(headBackButton);
 
         JButton nextButton = createNextButton();
@@ -71,14 +73,14 @@ public class MainFrame {
         nextReservationPanel = createBasicPanel(false);
         frame.add(nextReservationPanel);
 
-        JButton headBackButton = createHeadBackButton(nextReservationPanel, reservationPanel, false);
+        JButton headBackButton = createHeadBackButtonToReservationPanel(nextReservationPanel);
         nextReservationPanel.add(headBackButton);
     }
     public void showReservationsPanel() {
         showReservationsPanel = createBasicPanel(false);
         frame.add(showReservationsPanel);
 
-        JButton headBackButton = createHeadBackButton(showReservationsPanel, mainPanel, false);
+        JButton headBackButton = createHeadBackButtonToMainPanel(showReservationsPanel, false);
         showReservationsPanel.add(headBackButton);
     }
 
@@ -88,69 +90,65 @@ public class MainFrame {
 
     private JButton createButtonForMainPanel(String buttonText, int y  , JPanel panel) {
         JButton button = new JButton(buttonText);
-        button.setBounds((frame.getWidth() - button.getWidth())/2 - (250 /2), y, 250, 50);
-        button.setFont(new Font("Arial", Font.BOLD, 20));
-        button.setBorderPainted(false);
-        button.setFocusPainted(false);
-        button.setBackground(Color.BLACK);
-        button.setForeground(Color.LIGHT_GRAY);
-        button.addActionListener(e -> {
-            panel.setVisible(true);
-            mainPanel.setVisible(false);
-        });
+            button.setBounds((frame.getWidth() - button.getWidth())/2 - (250 /2), y, 250, 50);
+            button.setFont(new Font("Arial", Font.BOLD, 20));
+            button.setBorderPainted(false);
+            button.setFocusPainted(false);
+            button.setBackground(Color.BLACK);
+            button.setForeground(Color.LIGHT_GRAY);
+            button.addActionListener(e -> {
+                panel.setVisible(true);
+                mainPanel.setVisible(false);
+            });
         return button;
     }
-    private JButton createHeadBackButton(JPanel panelOpenedAtTheMoment, JPanel panelToHeadBack, boolean isClearingSeatsNecessary) {
+    private JButton createHeadBackButtonToMainPanel(JPanel panelOpenedAtTheMoment, boolean isClearingSeatsNecessary) {
         JButton headBackButton = new JButton("Wróć");
-        headBackButton.setBounds((frame.getWidth() - headBackButton.getWidth())/2 - 250, 500, 200, 50);
-        headBackButton.setFont(new Font("Arial", Font.BOLD, 20));
-        headBackButton.setBorderPainted(false);
-        headBackButton.setFocusPainted(false);
-        headBackButton.setBackground(Color.BLACK);
-        headBackButton.setForeground(Color.LIGHT_GRAY);
-        headBackButton.addActionListener(e -> {
-            panelToHeadBack.setVisible(true);
-            panelOpenedAtTheMoment.setVisible(false);
-            if(isClearingSeatsNecessary) {
+            headBackButton.setBounds((frame.getWidth() - headBackButton.getWidth())/2 - 250, 500, 200, 50);
+            headBackButton.setFont(new Font("Arial", Font.BOLD, 20));
+            headBackButton.setBorderPainted(false);
+            headBackButton.setFocusPainted(false);
+            headBackButton.setBackground(Color.BLACK);
+            headBackButton.setForeground(Color.LIGHT_GRAY);
+            headBackButton.addActionListener(e -> {
+                mainPanel.setVisible(true);
+                panelOpenedAtTheMoment.setVisible(false);
+                if(isClearingSeatsNecessary) {
+                    clearSeats();
+                }
+            });
+        return headBackButton;
+    }
+    private JButton createHeadBackButtonToReservationPanel(JPanel panelOpenedAtTheMoment) {
+        JButton headBackButton = new JButton("Wróć");
+            headBackButton.setBounds((frame.getWidth() - headBackButton.getWidth())/2 - 250, 500, 200, 50);
+            headBackButton.setFont(new Font("Arial", Font.BOLD, 20));
+            headBackButton.setBorderPainted(false);
+            headBackButton.setFocusPainted(false);
+            headBackButton.setBackground(Color.BLACK);
+            headBackButton.setForeground(Color.LIGHT_GRAY);
+            headBackButton.addActionListener(e -> {
+                reservationPanel.setVisible(true);
+                panelOpenedAtTheMoment.setVisible(false);
                 clearSeats();
-            }
-        });
+                clearSavedSeats();
+            });
         return headBackButton;
     }
     private JButton createNextButton() {
         JButton nextButton = new JButton("Dalej");
-        nextButton.setBounds((reservationPanel.getWidth()- nextButton.getWidth())/2 + 50, 500, 200, 50);
-        nextButton.setFont(new Font("Arial", Font.BOLD, 20));
-        nextButton.setBorderPainted(false);
-        nextButton.setFocusPainted(false);
-        nextButton.setBackground(Color.BLACK);
-        nextButton.setForeground(Color.LIGHT_GRAY);
+            nextButton.setBounds((reservationPanel.getWidth()- nextButton.getWidth())/2 + 50, 500, 200, 50);
+            nextButton.setFont(new Font("Arial", Font.BOLD, 20));
+            nextButton.setBorderPainted(false);
+            nextButton.setFocusPainted(false);
+            nextButton.setBackground(Color.BLACK);
+            nextButton.setForeground(Color.LIGHT_GRAY);
+            nextButton.addActionListener(e -> {
+                reservationPanel.setVisible(false);
+                nextReservationPanel.setVisible(true);
+                createFinalReservationQuestion();
+            });
         return nextButton;
-    }
-    private void assignSeatsArray() {
-        for(int i = 0; i < 10; i++) {
-            for(int j = 0; j < 5; j++) {
-                seats[i][j] = new JButton("-");
-                seats[i][j].setBounds((i+14)*30, 230+j*30, 30, 30);
-                seats[i][j].setFont(new Font("Arial", Font.PLAIN, 20));
-                seats[i][j].setFocusPainted(false);
-                seats[i][j].setBackground(Color.GREEN);
-                seats[i][j].setForeground(Color.BLACK);
-                final int finalI = i;
-                final int finalJ = j;
-                seats[i][j].addActionListener(e -> {
-                    if(seats[finalI][finalJ].getBackground() == Color.GREEN) {
-                        System.out.println("Siedzenie " + (finalI + 1) + "(column)" + "-" + (finalJ + 1) + "(row)" + " wybrane dla filmu " + Objects.requireNonNull(moviesComboBox.getSelectedItem())+ " o godzinie " + timeComboBox.getSelectedItem());
-                        seats[finalI][finalJ].setBackground(Color.RED);
-                    }
-                    else if(seats[finalI][finalJ].getBackground() == Color.RED) {
-                        System.out.println("Siedzenie " + (finalI + 1) + "(column)" + "-" + (finalJ + 1) + "(row)" + " wyczyszczone");
-                        seats[finalI][finalJ].setBackground(Color.GREEN);
-                    }
-                });
-                reservationPanel.add(seats[i][j]);
-            }
-        }
     }
     private JLabel createBasicLabel(String labelText, int x, int y, int width, int height, int fontSize, int fontStyle, boolean doesItHaveToBeCentered) {
         JLabel label;
@@ -235,6 +233,37 @@ public class MainFrame {
             });
         return timeComboBox;
     }
+
+    private void assignSeatsArray() {
+        for(int i = 0; i < 10; i++) {
+            for(int j = 0; j < 5; j++) {
+                seats[i][j] = new JButton("-");
+                seats[i][j].setBounds((i+14)*30, 230+j*30, 30, 30);
+                seats[i][j].setFont(new Font("Arial", Font.PLAIN, 20));
+                seats[i][j].setFocusPainted(false);
+                seats[i][j].setBackground(Color.GREEN);
+                seats[i][j].setForeground(Color.BLACK);
+                final int finalI = i;
+                final int finalJ = j;
+                seats[i][j].addActionListener(e -> {
+                    if(seats[finalI][finalJ].getBackground() == Color.GREEN) {
+                        System.out.println("Siedzenie " + (finalI + 1) + "(column)" + "-" + (finalJ + 1) + "(row)" + " wybrane dla filmu " + Objects.requireNonNull(moviesComboBox.getSelectedItem())+ " o godzinie " + timeComboBox.getSelectedItem());
+                        savedSeats.add(new SavedSeats(finalI + 1, finalJ + 1));
+                        System.out.println("dodano siedzenie");
+                        seats[finalI][finalJ].setBackground(Color.RED);
+                    }
+                    else if(seats[finalI][finalJ].getBackground() == Color.RED) {
+                        System.out.println("Siedzenie " + (finalI + 1) + "(column)" + "-" + (finalJ + 1) + "(row)" + " wyczyszczone");
+                        if(savedSeats.removeIf(seat -> seat.getI() == finalI + 1 && seat.getJ() == finalJ + 1)) {
+                            System.out.println("Usuneło siedzenie");
+                        }
+                        seats[finalI][finalJ].setBackground(Color.GREEN);
+                    }
+                });
+                reservationPanel.add(seats[i][j]);
+            }
+        }
+    }
     private void addMovies() {
         movies.add(new Movie("The Dark Knight", 2008, "Action", 100));
         movies.add(new Movie("The Lord of the Rings: The Fellowship of the Ring", 2001, "Adventure", 120));
@@ -257,5 +286,16 @@ public class MainFrame {
             }
         }
         System.out.println("Siedzenia wyczyszczone");
+    }
+    private void clearSavedSeats() {
+        savedSeats.clear();
+        System.out.println("Zapisane siedzenia wyczyszczone");
+    }
+    private void createFinalReservationQuestion() {
+        int i = 0;
+        for(SavedSeats seat : savedSeats) {
+            i++;
+        }
+        System.out.println("Rezerwacja na " + i + " bilety/ów na film " + Objects.requireNonNull(moviesComboBox.getSelectedItem()) + " o godzinie " + timeComboBox.getSelectedItem());
     }
 }
