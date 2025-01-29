@@ -8,6 +8,6 @@ public record SavedSeats(int i, int j) {
 
     @Override
     public String toString() {
-        return "Seats: (" + i + ", " + j + ")";
+        return "Seat: (" + i + ", " + j + ")";
     }
 }

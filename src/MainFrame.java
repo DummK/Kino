@@ -1,7 +1,5 @@
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Objects;
+import java.util.*;
 import javax.swing.*;
 
 public class MainFrame {
@@ -14,7 +12,11 @@ public class MainFrame {
     private final JButton[][] seats = new JButton[10][5];
     private JComboBox<Movie> moviesComboBox;
     private JComboBox<String> timeComboBox;
-    private final LinkedList<SavedSeats> savedSeats = new LinkedList<>();
+    private final ArrayList<SavedSeats> savedSeats = new ArrayList<>();
+    private final LinkedList<JLabel> movieTitles = new LinkedList<>();
+    private final LinkedList<JLabel> hourTitles = new LinkedList<>();
+    private final LinkedList<JLabel> seatsTitles = new LinkedList<>();
+    private JLabel reservationQuestion;
 
     public void frame() {
         frame = new JFrame("Kino Cwelowy");
@@ -32,10 +34,10 @@ public class MainFrame {
         JLabel title = createBasicLabel("Kino Cwelowy", 0, 70, mainPanel.getWidth(), 60, 52, 2, true);
         mainPanel.add(title);
 
-        JButton reservationButton = createButtonForMainPanel("Rezerwacja", 200, reservationPanel);
+        JButton reservationButton = createButtonForMainPanel(reservationPanel);
         mainPanel.add(reservationButton);
 
-        JButton showReservationButton = createButtonForMainPanel("Twoje rezerwacje", 300, showReservationsPanel);
+        JButton showReservationButton = createButtonForMainPanelToShowReservationsPanel(showReservationsPanel);
         mainPanel.add(showReservationButton);
     }
     public void reservationPanel() {
@@ -47,19 +49,17 @@ public class MainFrame {
 
 
         addMovies(); //dodanie filmow
-        moviesComboBox = createMovieComboBox(); //wybor filmow
+        moviesComboBox = createMovieComboBox();//wybor filmow
         reservationPanel.add(moviesComboBox);
 
         JLabel timeLabel = createBasicLabel("Wybierz godzinę: ", 200, 150, 350, 30, 20, 0, false);
         reservationPanel.add(timeLabel);
 
-
-        timeComboBox = createTimeComboBox();//Wybor godzin
+        timeComboBox = createTimeComboBox();
         reservationPanel.add(timeComboBox);
 
         JLabel seatsLabel = createBasicLabel("Wybierz miejsca: ", 200, 290, 350, 30, 20, 0, false);
         reservationPanel.add(seatsLabel);
-
 
         assignSeatsArray();  //Pętla do zrobienia tablicy przycisków do wyboru miejsc
 
@@ -75,22 +75,42 @@ public class MainFrame {
 
         JButton headBackButton = createHeadBackButtonToReservationPanel(nextReservationPanel);
         nextReservationPanel.add(headBackButton);
+
+        JButton acceptButton = createAcceptButton();
+        nextReservationPanel.add(acceptButton);
     }
     public void showReservationsPanel() {
         showReservationsPanel = createBasicPanel(false);
         frame.add(showReservationsPanel);
-
-        JButton headBackButton = createHeadBackButtonToMainPanel(showReservationsPanel, false);
-        showReservationsPanel.add(headBackButton);
     }
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(MainFrame::new);
     }
 
-    private JButton createButtonForMainPanel(String buttonText, int y  , JPanel panel) {
-        JButton button = new JButton(buttonText);
-            button.setBounds((frame.getWidth() - button.getWidth())/2 - (250 /2), y, 250, 50);
+
+    //
+     //
+     //
+    //
+     //
+     //
+
+
+    //ZROBIC WSZYSTKO ZA POMOCA MOVIE I BEDZIE GIT
+
+
+    //
+    //
+    //
+    //
+    //
+    //
+
+
+    private JButton createButtonForMainPanel(JPanel panel) {
+        JButton button = new JButton("Rezerwacja");
+            button.setBounds((frame.getWidth() - button.getWidth())/2 - (250 /2), 200, 250, 50);
             button.setFont(new Font("Arial", Font.BOLD, 20));
             button.setBorderPainted(false);
             button.setFocusPainted(false);
@@ -100,6 +120,21 @@ public class MainFrame {
                 panel.setVisible(true);
                 mainPanel.setVisible(false);
             });
+        return button;
+    }
+    private JButton createButtonForMainPanelToShowReservationsPanel(JPanel panel) {
+        JButton button = new JButton("Twoje rezerwacje");
+        button.setBounds((frame.getWidth() - button.getWidth())/2 - (250 /2), 300, 250, 50);
+        button.setFont(new Font("Arial", Font.BOLD, 20));
+        button.setBorderPainted(false);
+        button.setFocusPainted(false);
+        button.setBackground(Color.BLACK);
+        button.setForeground(Color.LIGHT_GRAY);
+        button.addActionListener(e -> {
+            showReservations();
+            panel.setVisible(true);
+            mainPanel.setVisible(false);
+        });
         return button;
     }
     private JButton createHeadBackButtonToMainPanel(JPanel panelOpenedAtTheMoment, boolean isClearingSeatsNecessary) {
@@ -130,6 +165,8 @@ public class MainFrame {
             headBackButton.addActionListener(e -> {
                 reservationPanel.setVisible(true);
                 panelOpenedAtTheMoment.setVisible(false);
+                nextReservationPanel.remove(reservationQuestion);
+
                 clearSeats();
                 clearSavedSeats();
             });
@@ -144,11 +181,44 @@ public class MainFrame {
             nextButton.setBackground(Color.BLACK);
             nextButton.setForeground(Color.LIGHT_GRAY);
             nextButton.addActionListener(e -> {
-                reservationPanel.setVisible(false);
-                nextReservationPanel.setVisible(true);
-                createFinalReservationQuestion();
+                if(moviesComboBox.getSelectedIndex() == -1) {
+                    showErrorPopup("Gościu wybierz jakiś film!");
+                }
+                else if(timeComboBox.getSelectedIndex() == -1) {
+                    showErrorPopup("Gościu wybierz jakąś godzine!");
+                }
+                else if(savedSeats.isEmpty()){
+                    showErrorPopup("Gościu wybierz przynajmniej jakieś miejsce!");
+                }
+                else {
+                    reservationPanel.setVisible(false);
+                    createFinalReservationQuestion();
+                    nextReservationPanel.setVisible(true);
+                }
+
             });
         return nextButton;
+    }
+    private JButton createAcceptButton() {
+        JButton acceptButton = new JButton("Zarezerwuj");
+            acceptButton.setBounds((nextReservationPanel.getWidth()- acceptButton.getWidth())/2 + 50, 500, 200, 50);
+            acceptButton.setFont(new Font("Arial", Font.BOLD, 20));
+            acceptButton.setBorderPainted(false);
+            acceptButton.setFocusPainted(false);
+            acceptButton.setBackground(Color.BLACK);
+            acceptButton.setForeground(Color.LIGHT_GRAY);
+            acceptButton.addActionListener(e -> {
+                mainPanel.setVisible(true);
+                nextReservationPanel.setVisible(false);
+                nextReservationPanel.remove(reservationQuestion);
+
+                movies.get(moviesComboBox.getSelectedIndex()).setReservedSeatsMap(Objects.requireNonNull(timeComboBox.getSelectedItem()).toString(), savedSeats);
+                readInReservedSeats();
+
+                clearSavedSeats();
+                clearSeats();
+            });
+        return acceptButton;
     }
     private JLabel createBasicLabel(String labelText, int x, int y, int width, int height, int fontSize, int fontStyle, boolean doesItHaveToBeCentered) {
         JLabel label;
@@ -192,7 +262,7 @@ public class MainFrame {
                 public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                     super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                     if (value instanceof Movie) {
-                        setText(((Movie) value).title());
+                        setText(((Movie) value).getTitle());
                     }
                     return this;
                 }
@@ -201,27 +271,34 @@ public class MainFrame {
 
             moviesComboBox.setBounds(400, 50, 350, 30);
             moviesComboBox.setFont(new Font("Arial", Font.PLAIN, 20));
+            moviesComboBox.setSelectedIndex(-1);
             moviesComboBox.setEditable(false);
             moviesComboBox.setBackground(Color.WHITE);
             moviesComboBox.setForeground(Color.BLACK);
             moviesComboBox.addActionListener(e -> {
                 Movie selectedMovie = (Movie) moviesComboBox.getSelectedItem();
                 if(selectedMovie != null) {
-                    System.out.println("Wybrany film: " + selectedMovie.title());
+                    reservationPanel.remove(timeComboBox);
+                    timeComboBox.removeAllItems();
+
+                    for(Movie movie : movies) {
+                        if(movie == selectedMovie) {
+                            for(int i = 0; i < movie.getHours().size(); i++) {
+                                timeComboBox.addItem(movie.getHours().get(i));
+                            }
+                        }
+                    }
+                    System.out.println("Wybrany film: " + selectedMovie.getTitle());
                     clearSeats();
+                    clearSavedSeats();
+                    createTimeComboBox();
+                    reservationPanel.add(timeComboBox);
                 }
             });
         return moviesComboBox;
     }
     private JComboBox<String> createTimeComboBox() {
         JComboBox<String> timeComboBox = new JComboBox<>();
-            timeComboBox.addItem("10:00");
-            timeComboBox.addItem("12:00");
-            timeComboBox.addItem("14:00");
-            timeComboBox.addItem("16:00");
-            timeComboBox.addItem("18:00");
-            timeComboBox.addItem("20:00");
-            timeComboBox.addItem("22:00");
             timeComboBox.setBounds(400, 150, 350, 30);
             timeComboBox.setFont(new Font("Arial", Font.PLAIN, 20));
             timeComboBox.setEditable(false);
@@ -229,55 +306,99 @@ public class MainFrame {
             timeComboBox.setForeground(Color.BLACK);
             timeComboBox.addActionListener(e -> {
                 System.out.println("Wybrana godzina dla filmu " + Objects.requireNonNull(moviesComboBox.getSelectedItem()) + ": " + timeComboBox.getSelectedItem()); //jakies zabezpieczenie zeby nie bylo null
+                clearSavedSeats();
                 clearSeats();
             });
         return timeComboBox;
     }
 
     private void assignSeatsArray() {
-        for(int i = 0; i < 10; i++) {
-            for(int j = 0; j < 5; j++) {
-                seats[i][j] = new JButton("-");
-                seats[i][j].setBounds((i+14)*30, 230+j*30, 30, 30);
-                seats[i][j].setFont(new Font("Arial", Font.PLAIN, 20));
-                seats[i][j].setFocusPainted(false);
-                seats[i][j].setBackground(Color.GREEN);
-                seats[i][j].setForeground(Color.BLACK);
-                final int finalI = i;
-                final int finalJ = j;
-                seats[i][j].addActionListener(e -> {
-                    if(seats[finalI][finalJ].getBackground() == Color.GREEN) {
-                        System.out.println("Siedzenie " + (finalI + 1) + "(column)" + "-" + (finalJ + 1) + "(row)" + " wybrane dla filmu " + Objects.requireNonNull(moviesComboBox.getSelectedItem())+ " o godzinie " + timeComboBox.getSelectedItem());
-                        savedSeats.add(new SavedSeats(finalI + 1, finalJ + 1));
-                        System.out.println("dodano siedzenie");
-                        seats[finalI][finalJ].setBackground(Color.RED);
-                    }
-                    else if(seats[finalI][finalJ].getBackground() == Color.RED) {
-                        System.out.println("Siedzenie " + (finalI + 1) + "(column)" + "-" + (finalJ + 1) + "(row)" + " wyczyszczone");
-                        if(savedSeats.removeIf(seat -> seat.getI() == finalI + 1 && seat.getJ() == finalJ + 1)) {
-                            System.out.println("Usuneło siedzenie");
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 5; j++) {
+                if(seats[i][j] == null) {
+                    seats[i][j] = new JButton("-");
+                    seats[i][j].setBounds((i + 14) * 30, 230 + j * 30, 30, 30);
+                    seats[i][j].setFont(new Font("Arial", Font.PLAIN, 20));
+                    seats[i][j].setFocusPainted(false);
+                    seats[i][j].setBackground(Color.GREEN);
+                    seats[i][j].setForeground(Color.BLACK);
+                    final int finalI = i;
+                    final int finalJ = j;
+                    seats[i][j].addActionListener(e -> {
+                        if (seats[finalI][finalJ].getBackground() == Color.GREEN) {
+                            System.out.println("Siedzenie " + (finalI + 1) + "(column)" + "-" + (finalJ + 1) + "(row)" + " wybrane dla filmu " + Objects.requireNonNull(moviesComboBox.getSelectedItem()) + " o godzinie " + timeComboBox.getSelectedItem());
+                            savedSeats.add(new SavedSeats(finalI + 1, finalJ + 1));
+                            System.out.println("dodano siedzenie");
+                            seats[finalI][finalJ].setBackground(Color.RED);
+                        } else if (seats[finalI][finalJ].getBackground() == Color.RED) {
+                            System.out.println("Siedzenie " + (finalI + 1) + "(column)" + "-" + (finalJ + 1) + "(row)" + " wyczyszczone");
+                            if (savedSeats.removeIf(seat -> seat.getI() == finalI + 1 && seat.getJ() == finalJ + 1)) {
+                                System.out.println("Usuneło siedzenie");
+                            }
+                            seats[finalI][finalJ].setBackground(Color.GREEN);
                         }
-                        seats[finalI][finalJ].setBackground(Color.GREEN);
-                    }
-                });
-                reservationPanel.add(seats[i][j]);
+                    });
+                    reservationPanel.add(seats[i][j]);
+                }
+
+
+            }
+
+        }
+    }
+    private void readInReservedSeats() {
+
+    }
+    private void showReservations() {
+
+        showReservationsPanel.removeAll();
+
+        JButton headBackButton = createHeadBackButtonToMainPanel(showReservationsPanel, false);
+        showReservationsPanel.add(headBackButton);
+
+        createLabelsForShowReservationsPanel();
+
+        int movieLabelY = 0;
+        int hourLabelY = 0;
+        int seatLabelY = 0;
+        int indexForMovieTitles = 0;
+        int indexForSeatTitles = 0;
+        for (Movie movie : movies) {
+            if (!movie.getReservedSeatsMap().isEmpty()) {
+
             }
         }
     }
+    private void createLabelsForShowReservationsPanel() {
+        JLabel movieLabel = new JLabel("Film:");
+        movieLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        movieLabel.setBounds(105, 0, 100, 30);
+        showReservationsPanel.add(movieLabel);
+
+        JLabel hourLabel = new JLabel("Godzina:");
+        hourLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        hourLabel.setBounds(410, 0, 100, 30);
+        showReservationsPanel.add(hourLabel);
+
+        JLabel seatsLabel = new JLabel("Miejsca:");
+        seatsLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        seatsLabel.setBounds(720, 0, 100, 30);
+        showReservationsPanel.add(seatsLabel);
+    }
     private void addMovies() {
-        movies.add(new Movie("The Dark Knight", 2008, "Action", 100));
-        movies.add(new Movie("The Lord of the Rings: The Fellowship of the Ring", 2001, "Adventure", 120));
-        movies.add(new Movie("Inception", 2010, "Sci-Fi", 140));
-        movies.add(new Movie("Memento", 2000, "Mystery", 90));
-        movies.add(new Movie("Gladiator", 2000, "Drama", 120));
-        movies.add(new Movie("The Lion King", 1994, "Animation", 85));
-        movies.add(new Movie("The Silence of the Lambs", 1991, "Mystery", 102));
-        movies.add(new Movie("The Usual Suspects", 1995, "Mystery", 104));
-        movies.add(new Movie("Pulp Fiction", 1994, "Crime", 154));
-        movies.add(new Movie("Schindler's List", 1993, "Drama", 195));
-        movies.add(new Movie("The Departed", 2006, "Crime", 162));
-        movies.add(new Movie("American Psycho", 1990, "Drama", 108));
-        movies.add(new Movie("The Lives of Others", 2006, "Comedy", 117));
+        movies.add(new Movie("The Dark Knight", "Action", 2008, 100, new ArrayList<String>(Arrays.asList("10:00", "16:00", "20:00"))));
+        movies.add(new Movie("The Lord of the Rings", "Adventure", 2001, 120, new ArrayList<String>(Arrays.asList("10:00", "16:00", "20:00"))));
+        movies.add(new Movie("Inception", "Sci-Fi", 2010, 140, new ArrayList<String>(Arrays.asList("10:00", "16:00", "20:00"))));
+        movies.add(new Movie("Memento", "Mystery", 2000, 90, new ArrayList<String>(Arrays.asList("13:00", "18:00", "20:00"))));
+        movies.add(new Movie("Gladiator", "Drama", 2000, 120, new ArrayList<String>(Arrays.asList("10:00", "16:00", "20:00"))));
+        movies.add(new Movie("The Lion King", "Animation", 1994, 85, new ArrayList<String>(Arrays.asList("12:00", "16:00", "20:00"))));
+        movies.add(new Movie("The Silence of the Lambs", "Mystery", 1991, 102, new ArrayList<String>(Arrays.asList("10:00", "16:00", "20:00"))));
+        movies.add(new Movie("The Usual Suspects", "Mystery", 1995, 104, new ArrayList<String>(Arrays.asList("10:00", "16:00", "20:00"))));
+        movies.add(new Movie("Pulp Fiction", "Crime", 1994, 154, new ArrayList<String>(Arrays.asList("12:00", "16:00", "23:00"))));
+        movies.add(new Movie("Schindler's List", "Drama", 1993, 195, new ArrayList<String>(Arrays.asList("10:00", "14:00", "20:00"))));
+        movies.add(new Movie("The Departed", "Crime", 2006, 162, new ArrayList<String>(Arrays.asList("10:00", "15:00", "20:00"))));
+        movies.add(new Movie("American Psycho", "Drama", 1990, 108, new ArrayList<String>(Arrays.asList("11:00", "16:00", "20:00"))));
+        movies.add(new Movie("The Lives of Others", "Comedy", 2006, 117, new ArrayList<String>(Arrays.asList("13:00", "16:00", "20:00"))));
     }
     private void clearSeats() {
         for(int i = 0; i < 10; i++) {
@@ -296,6 +417,13 @@ public class MainFrame {
         for(SavedSeats seat : savedSeats) {
             i++;
         }
-        System.out.println("Rezerwacja na " + i + " bilety/ów na film " + Objects.requireNonNull(moviesComboBox.getSelectedItem()) + " o godzinie " + timeComboBox.getSelectedItem());
+
+        reservationQuestion = new JLabel("Rezerwacja na " + i + " bilet/y/ów na film " + Objects.requireNonNull(moviesComboBox.getSelectedItem()) + " o godzinie " + timeComboBox.getSelectedItem(), SwingConstants.CENTER);
+            reservationQuestion.setBounds(0, 200, 1000, 50);
+            reservationQuestion.setFont(new Font("Arial", Font.BOLD, 25));
+        nextReservationPanel.add(reservationQuestion);
+    }
+    private void showErrorPopup(String message) {
+        JOptionPane.showMessageDialog(frame, message, "Błąd", JOptionPane.ERROR_MESSAGE);
     }
 }
