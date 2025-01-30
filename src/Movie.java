@@ -10,8 +10,10 @@ public class Movie {
     private int durationInMinutes;
     private ArrayList<String> hours;
     private ArrayList<SavedSeats> reservedSeats;
-    private HashMap<String, ArrayList<SavedSeats>> reservedSeatsMap;
+    private JButton[][] seats = new JButton[10][5];
+    private HashMap<String, JButton[][]> seatsMap;
     private Set<String> keys;
+
 
     public Movie(String title, String genre, int year, int durationInMinutes, ArrayList<String> hours) {
         this.title = title;
@@ -19,16 +21,16 @@ public class Movie {
         this.year = year;
         this.durationInMinutes = durationInMinutes;
         this.hours = hours;
-        reservedSeatsMap = new HashMap<>();
+        seatsMap = new HashMap<>();
     }
 
-    public void setReservedSeatsMap(String hour, ArrayList<SavedSeats> reservedSeats) {
-        reservedSeatsMap.put(hour, reservedSeats);
-        keys = reservedSeatsMap.keySet();
+    public void setSeatsMap(String hour, JButton[][] seats) {
+        seatsMap.put(hour, seats);
+        keys = seatsMap.keySet();
     }
 
-    public HashMap<String, ArrayList<SavedSeats>> getReservedSeatsMap() {
-        return reservedSeatsMap;
+    public HashMap<String, JButton[][]> getSeatsMap() {
+        return seatsMap;
     }
     public String getTitle() {
         return title;
@@ -42,10 +44,17 @@ public class Movie {
     public ArrayList<SavedSeats> getReservedSeats() {
         return reservedSeats;
     }
+    public JButton[][] getSeats() {
+        return seats;
+    }
 
     @Override
     public String toString() {
         return title;
+    }
+
+    public void getSeatsMap(String string, JButton[][] seats) {
+
     }
 }
 
